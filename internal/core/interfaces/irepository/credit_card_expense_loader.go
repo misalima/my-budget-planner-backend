@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type CreditCardExpenseRepository interface {
+type CreditCardExpenseLoader interface {
 	InsertCreditCardExpense(ctx context.Context, expense domain.CreditCardExpense) (domain.CreditCardExpense, error)
 	UpdateCreditCardExpense(ctx context.Context, expense domain.CreditCardExpense) (domain.CreditCardExpense, error)
 	DeleteCreditCardExpense(ctx context.Context, id uuid.UUID) error
