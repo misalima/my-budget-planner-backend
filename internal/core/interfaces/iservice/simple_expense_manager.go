@@ -14,12 +14,5 @@ type SimpleExpenseManager interface {
 	DeleteSimpleExpense(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	GetSimpleExpenseByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (domain.SimpleExpense, error)
 	ListSimpleExpenses(ctx context.Context, userID uuid.UUID, filters irepository.SimpleExpenseFilters) ([]domain.SimpleExpense, error)
-	GetSimpleExpenseSummary(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) (SimpleExpenseSummary, error)
-}
-
-type SimpleExpenseSummary struct {
-	TotalAmount   float64
-	TotalCount    int
-	AverageAmount float64
-	ByCategory    map[int]float64
+	GetSimpleExpenseSummary(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) (domain.SimpleExpenseSummary, error)
 }

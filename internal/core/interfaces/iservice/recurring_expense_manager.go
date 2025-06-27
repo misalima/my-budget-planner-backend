@@ -15,13 +15,5 @@ type RecurringExpenseManager interface {
 	GetRecurringExpenseByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (domain.RecurringExpense, error)
 	ListRecurringExpenses(ctx context.Context, userID uuid.UUID, filters irepository.RecurringExpenseFilters) ([]domain.RecurringExpense, error)
 	GenerateRecurringExpenses(ctx context.Context, userID uuid.UUID, targetDate time.Time) error
-	GetRecurringExpenseSummary(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) (RecurringExpenseSummary, error)
-}
-
-type RecurringExpenseSummary struct {
-	TotalAmount   float64
-	TotalCount    int
-	AverageAmount float64
-	ByFrequency   map[string]float64
-	ByCategory    map[int]float64
+	GetRecurringExpenseSummary(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) (domain.RecurringExpenseSummary, error)
 }

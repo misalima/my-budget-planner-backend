@@ -18,3 +18,12 @@ type CreditCardExpense struct {
 	CreatedAt          time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at" db:"updated_at"`
 }
+
+type CreditCardExpenseSummary struct {
+	TotalAmount          float64
+	TotalCount           int
+	AverageAmount        float64
+	ByCard               map[uuid.UUID]float64
+	ByCategory           map[int]float64
+	ByInstallmentsNumber map[int]float64
+}

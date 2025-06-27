@@ -15,3 +15,10 @@ type SimpleExpense struct {
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
 }
+
+type SimpleExpenseSummary struct {
+	TotalAmount   float64
+	TotalCount    int
+	AverageAmount float64
+	ByCategory    map[int]float64
+}

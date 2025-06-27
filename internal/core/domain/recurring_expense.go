@@ -19,3 +19,11 @@ type RecurringExpense struct {
 	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
 }
+
+type RecurringExpenseSummary struct {
+	TotalAmount   float64
+	TotalCount    int
+	AverageAmount float64
+	ByFrequency   map[string]float64
+	ByCategory    map[int]float64
+}
