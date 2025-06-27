@@ -4,7 +4,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/iservice"
 	"github.com/misalima/my-budget-planner-backend/internal/core/services"
-	postgres "github.com/misalima/my-budget-planner-backend/internal/infra/postgres/repository"
+	postgres "github.com/misalima/my-budget-planner-backend/internal/infra/postgres"
 )
 
 type Container struct {
