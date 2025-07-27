@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/misalima/my-budget-planner-backend/internal/core/domain"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/irepository"
+	"strconv"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func (r RecurringExpenseRepository) InsertRecurringExpense(ctx context.Context, 
 	query := `
 		INSERT INTO recurring_expense (user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-		RETURNING id`
+		RETURNING "ID"`
 
 	now := time.Now()
 	expense.CreatedAt = now
@@ -47,18 +48,62 @@ func (r RecurringExpenseRepository) InsertRecurringExpense(ctx context.Context, 
 }
 
 func (r RecurringExpenseRepository) UpdateRecurringExpense(ctx context.Context, expense domain.RecurringExpense) (domain.RecurringExpense, error) {
-	query := `
-		UPDATE recurring_expense 
-		SET category_id = $2, amount = $3, description = $4, date = $5, card_id = $6, start_date = $7, end_date = $8, frequency = $9, updated_at = $10
-		WHERE id = $1 AND user_id = $11
-		RETURNING id, user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at`
+	query := "UPDATE recurring_expense SET "
+	var args []interface{}
+	argCount := 1
 
-	expense.UpdatedAt = time.Now()
+	if expense.CategoryID != 0 {
+		query += "category_id = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.CategoryID)
+		argCount++
+	}
+	if expense.Amount != 0 {
+		query += "amount = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.Amount)
+		argCount++
+	}
+	if expense.Description != nil {
+		query += "description = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, *expense.Description)
+		argCount++
+	}
+	if !expense.Date.IsZero() {
+		query += "date = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.Date)
+		argCount++
+	}
+	if expense.CardID != nil && *expense.CardID != uuid.Nil {
+		query += "card_id = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, *expense.CardID)
+		argCount++
+	}
+	if !expense.StartDate.IsZero() {
+		query += "start_date = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.StartDate)
+		argCount++
+	}
+	if expense.EndDate != nil {
+		query += "end_date = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, *expense.EndDate)
+		argCount++
+	}
+	if expense.Frequency != "" {
+		query += "frequency = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.Frequency)
+		argCount++
+	}
+	query += "updated_at = $" + strconv.Itoa(argCount)
+	args = append(args, time.Now())
+	argCount++
 
-	err := r.db.QueryRow(ctx, query,
-		expense.ID, expense.CategoryID, expense.Amount, expense.Description, expense.Date,
-		expense.CardID, expense.StartDate, expense.EndDate, expense.Frequency, expense.UpdatedAt, expense.UserID,
-	).Scan(
+	query += " WHERE \"ID\" = $" + strconv.Itoa(argCount) + " AND user_id = $" + strconv.Itoa(argCount+1)
+	args = append(args, expense.ID, expense.UserID)
+
+	query += " RETURNING \"ID\", user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at"
+
+	row := r.db.QueryRow(ctx, query, args...)
+
+	err := row.Scan(
 		&expense.ID, &expense.UserID, &expense.CategoryID, &expense.Amount, &expense.Description,
 		&expense.Date, &expense.CardID, &expense.StartDate, &expense.EndDate, &expense.Frequency,
 		&expense.CreatedAt, &expense.UpdatedAt,
@@ -75,7 +120,7 @@ func (r RecurringExpenseRepository) UpdateRecurringExpense(ctx context.Context, 
 }
 
 func (r RecurringExpenseRepository) DeleteRecurringExpense(ctx context.Context, id uuid.UUID) error {
-	query := `DELETE FROM recurring_expense WHERE id = $1`
+	query := `DELETE FROM recurring_expense WHERE "ID" = $1`
 
 	result, err := r.db.Exec(ctx, query, id)
 	if err != nil {
@@ -91,9 +136,9 @@ func (r RecurringExpenseRepository) DeleteRecurringExpense(ctx context.Context, 
 
 func (r RecurringExpenseRepository) FindRecurringExpenseByID(ctx context.Context, id uuid.UUID) (domain.RecurringExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at
 		FROM recurring_expense 
-		WHERE id = $1`
+		WHERE "ID" = $1`
 
 	var expense domain.RecurringExpense
 
@@ -115,7 +160,7 @@ func (r RecurringExpenseRepository) FindRecurringExpenseByID(ctx context.Context
 
 func (r RecurringExpenseRepository) FindRecurringExpenses(ctx context.Context, userID uuid.UUID, filters irepository.RecurringExpenseFilters) ([]domain.RecurringExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at
 		FROM recurring_expense 
 		WHERE user_id = $1`
 
@@ -208,7 +253,7 @@ func (r RecurringExpenseRepository) FindRecurringExpenses(ctx context.Context, u
 
 func (r RecurringExpenseRepository) FindRecurringExpensesByUser(ctx context.Context, userID uuid.UUID) ([]domain.RecurringExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at
 		FROM recurring_expense 
 		WHERE user_id = $1
 		ORDER BY start_date DESC, created_at DESC`
@@ -242,7 +287,7 @@ func (r RecurringExpenseRepository) FindRecurringExpensesByUser(ctx context.Cont
 
 func (r RecurringExpenseRepository) FindRecurringExpensesByDateRange(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) ([]domain.RecurringExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, start_date, end_date, frequency, created_at, updated_at
 		FROM recurring_expense 
 		WHERE user_id = $1 AND start_date >= $2 AND (end_date IS NULL OR end_date <= $3)
 		ORDER BY start_date DESC, created_at DESC`

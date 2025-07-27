@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/misalima/my-budget-planner-backend/internal/core/domain"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/irepository"
+	"strconv"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func (c CreditCardExpenseRepository) InsertCreditCardExpense(ctx context.Context
 	query := `
 		INSERT INTO credit_card_expense (user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		RETURNING id`
+		RETURNING "ID"`
 
 	now := time.Now()
 	expense.CreatedAt = now
@@ -38,18 +39,57 @@ func (c CreditCardExpenseRepository) InsertCreditCardExpense(ctx context.Context
 }
 
 func (c CreditCardExpenseRepository) UpdateCreditCardExpense(ctx context.Context, expense domain.CreditCardExpense) (domain.CreditCardExpense, error) {
-	query := `
-		UPDATE credit_card_expense 
-		SET category_id = $2, amount = $3, description = $4, date = $5, card_id = $6, installment_amount = $7, installments_number = $8, updated_at = $9
-		WHERE id = $1 AND user_id = $10
-		RETURNING id, user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at`
+	query := `UPDATE credit_card_expense SET `
+	var args []interface{}
+	argCount := 1
 
-	expense.UpdatedAt = time.Now()
+	if expense.CategoryID != 0 {
+		query += "category_id = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.CategoryID)
+		argCount++
+	}
+	if expense.Amount != 0 {
+		query += "amount = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.Amount)
+		argCount++
+	}
+	if expense.Description != nil {
+		query += "description = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, *expense.Description)
+		argCount++
+	}
+	if !expense.Date.IsZero() {
+		query += "date = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.Date)
+		argCount++
+	}
+	if expense.CardID != uuid.Nil {
+		query += "card_id = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.CardID)
+		argCount++
+	}
+	if expense.InstallmentAmount != 0 {
+		query += "installment_amount = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.InstallmentAmount)
+		argCount++
+	}
+	if expense.InstallmentsNumber != 0 {
+		query += "installments_number = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.InstallmentsNumber)
+		argCount++
+	}
+	query += "updated_at = $" + strconv.Itoa(argCount)
+	args = append(args, time.Now())
+	argCount++
 
-	err := c.db.QueryRow(ctx, query,
-		expense.ID, expense.CategoryID, expense.Amount, expense.Description, expense.Date,
-		expense.CardID, expense.InstallmentAmount, expense.InstallmentsNumber, expense.UpdatedAt, expense.UserID,
-	).Scan(
+	query += " WHERE \"ID\" = $" + strconv.Itoa(argCount) + " AND user_id = $" + strconv.Itoa(argCount+1)
+	args = append(args, expense.ID, expense.UserID)
+
+	query += " RETURNING \"ID\", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at"
+
+	row := c.db.QueryRow(ctx, query, args...)
+
+	err := row.Scan(
 		&expense.ID, &expense.UserID, &expense.CategoryID, &expense.Amount, &expense.Description,
 		&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsNumber,
 		&expense.CreatedAt, &expense.UpdatedAt,
@@ -66,7 +106,7 @@ func (c CreditCardExpenseRepository) UpdateCreditCardExpense(ctx context.Context
 }
 
 func (c CreditCardExpenseRepository) DeleteCreditCardExpense(ctx context.Context, id uuid.UUID) error {
-	query := `DELETE FROM credit_card_expense WHERE id = $1`
+	query := `DELETE FROM credit_card_expense WHERE "ID" = $1`
 
 	result, err := c.db.Exec(ctx, query, id)
 	if err != nil {
@@ -82,9 +122,9 @@ func (c CreditCardExpenseRepository) DeleteCreditCardExpense(ctx context.Context
 
 func (c CreditCardExpenseRepository) FindCreditCardExpenseByID(ctx context.Context, id uuid.UUID) (domain.CreditCardExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
 		FROM credit_card_expense 
-		WHERE id = $1`
+		WHERE "ID" = $1`
 
 	var expense domain.CreditCardExpense
 
@@ -106,7 +146,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpenseByID(ctx context.Conte
 
 func (c CreditCardExpenseRepository) FindCreditCardExpenses(ctx context.Context, userID uuid.UUID, filters irepository.CreditCardExpenseFilters) ([]domain.CreditCardExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
 		FROM credit_card_expense 
 		WHERE user_id = $1`
 
@@ -199,7 +239,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpenses(ctx context.Context,
 
 func (c CreditCardExpenseRepository) FindCreditCardExpensesByUser(ctx context.Context, userID uuid.UUID) ([]domain.CreditCardExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
 		FROM credit_card_expense 
 		WHERE user_id = $1
 		ORDER BY date DESC, created_at DESC`
@@ -233,7 +273,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpensesByUser(ctx context.Co
 
 func (c CreditCardExpenseRepository) FindCreditCardExpensesByDateRange(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) ([]domain.CreditCardExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
 		FROM credit_card_expense 
 		WHERE user_id = $1 AND date >= $2 AND date <= $3
 		ORDER BY date DESC, created_at DESC`

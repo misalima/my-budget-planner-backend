@@ -3,7 +3,7 @@ package handlers
 import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/misalima/my-budget-planner-backend/internal/core/domain"
+	"github.com/misalima/my-budget-planner-backend/internal/api/http/handlers/dto"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/irepository"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/iservice"
 	"net/http"
@@ -20,12 +20,13 @@ func NewSimpleExpenseHandler(svc iservice.SimpleExpenseManager) *SimpleExpenseHa
 }
 
 func (h *SimpleExpenseHandler) CreateSimpleExpense(ctx echo.Context) error {
-	var expense domain.SimpleExpense
-	if err := ctx.Bind(&expense); err != nil {
+	var dtoReq dto.SimpleExpenseDTO
+	if err := ctx.Bind(&dtoReq); err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
 	}
-	if expense.UserID == uuid.Nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "user id is required"})
+	expense, err := dtoReq.ToDomain()
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
 	}
 	created, err := h.svc.CreateSimpleExpense(ctx.Request().Context(), expense)
 	if err != nil {
@@ -54,9 +55,9 @@ func (h *SimpleExpenseHandler) GetSimpleExpenseByID(ctx echo.Context) error {
 }
 
 func (h *SimpleExpenseHandler) ListSimpleExpenses(ctx echo.Context) error {
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 
 	filters := irepository.SimpleExpenseFilters{}
@@ -105,8 +106,16 @@ func (h *SimpleExpenseHandler) ListSimpleExpenses(ctx echo.Context) error {
 }
 
 func (h *SimpleExpenseHandler) UpdateSimpleExpense(ctx echo.Context) error {
-	var expense domain.SimpleExpense
-	if err := ctx.Bind(&expense); err != nil {
+	var dtoReq dto.SimpleExpenseUpdateDTO
+	if err := ctx.Bind(&dtoReq); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
+	}
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
+	}
+	expense, err := dtoReq.ToDomain(userID)
+	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
 	}
 	updated, err := h.svc.UpdateSimpleExpense(ctx.Request().Context(), expense)

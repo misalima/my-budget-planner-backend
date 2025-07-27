@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"github.com/misalima/my-budget-planner-backend/internal/api/http/handlers/dto"
 	"github.com/misalima/my-budget-planner-backend/internal/core/domain"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/irepository"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/iservice"
@@ -20,12 +21,13 @@ func NewCreditCardExpenseHandler(svc iservice.CreditCardExpenseManager) *CreditC
 }
 
 func (h *CreditCardExpenseHandler) CreateCreditCardExpense(ctx echo.Context) error {
-	var expense domain.CreditCardExpense
-	if err := ctx.Bind(&expense); err != nil {
+	var dtoReq dto.CreditCardExpenseDTO
+	if err := ctx.Bind(&dtoReq); err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
 	}
-	if expense.UserID == uuid.Nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "user id is required"})
+	expense, err := dtoReq.ToDomain()
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
 	}
 	created, err := h.svc.CreateCreditCardExpense(ctx.Request().Context(), expense)
 	if err != nil {
@@ -51,9 +53,9 @@ func (h *CreditCardExpenseHandler) GetCreditCardExpenseByID(ctx echo.Context) er
 }
 
 func (h *CreditCardExpenseHandler) ListCreditCardExpenses(ctx echo.Context) error {
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 
 	filters := irepository.CreditCardExpenseFilters{}
@@ -112,8 +114,16 @@ func (h *CreditCardExpenseHandler) ListCreditCardExpenses(ctx echo.Context) erro
 }
 
 func (h *CreditCardExpenseHandler) UpdateCreditCardExpense(ctx echo.Context) error {
-	var expense domain.CreditCardExpense
-	if err := ctx.Bind(&expense); err != nil {
+	var dtoReq dto.CreditCardExpenseUpdateDTO
+	if err := ctx.Bind(&dtoReq); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
+	}
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
+	}
+	expense, err := dtoReq.ToDomain(userID)
+	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
 	}
 	updated, err := h.svc.UpdateCreditCardExpense(ctx.Request().Context(), expense)

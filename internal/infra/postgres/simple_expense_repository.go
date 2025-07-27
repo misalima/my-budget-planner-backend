@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/misalima/my-budget-planner-backend/internal/core/domain"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/irepository"
+	"strconv"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func (s SimpleExpenseRepository) InsertSimpleExpense(ctx context.Context, expens
 	query := `
 		INSERT INTO simple_expense (user_id, category_id, amount, description, date, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id`
+		RETURNING "ID"`
 
 	now := time.Now()
 	expense.CreatedAt = now
@@ -43,23 +44,42 @@ func (s SimpleExpenseRepository) InsertSimpleExpense(ctx context.Context, expens
 }
 
 func (s SimpleExpenseRepository) UpdateSimpleExpense(ctx context.Context, expense domain.SimpleExpense) (domain.SimpleExpense, error) {
-	query := `
-		UPDATE simple_expense 
-		SET category_id = $2, amount = $3, description = $4, date = $5, updated_at = $6
-		WHERE id = $1 AND user_id = $7
-		RETURNING id, user_id, category_id, amount, description, date, created_at, updated_at`
+	query := "UPDATE simple_expense SET "
+	var args []interface{}
+	argCount := 1
 
-	expense.UpdatedAt = time.Now()
+	if expense.CategoryID != 0 {
+		query += "category_id = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.CategoryID)
+		argCount++
+	}
+	if expense.Amount != 0 {
+		query += "amount = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.Amount)
+		argCount++
+	}
+	if expense.Description != nil {
+		query += "description = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, *expense.Description)
+		argCount++
+	}
+	if !expense.Date.IsZero() {
+		query += "date = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.Date)
+		argCount++
+	}
+	query += "updated_at = $" + strconv.Itoa(argCount)
+	args = append(args, time.Now())
+	argCount++
 
-	err := s.db.QueryRow(ctx, query,
-		expense.ID,
-		expense.CategoryID,
-		expense.Amount,
-		expense.Description,
-		expense.Date,
-		expense.UpdatedAt,
-		expense.UserID,
-	).Scan(
+	query += " WHERE \"ID\" = $" + strconv.Itoa(argCount) + " AND user_id = $" + strconv.Itoa(argCount+1)
+	args = append(args, expense.ID, expense.UserID)
+
+	query += " RETURNING \"ID\", user_id, category_id, amount, description, date, created_at, updated_at"
+
+	row := s.db.QueryRow(ctx, query, args...)
+
+	err := row.Scan(
 		&expense.ID,
 		&expense.UserID,
 		&expense.CategoryID,
@@ -81,7 +101,7 @@ func (s SimpleExpenseRepository) UpdateSimpleExpense(ctx context.Context, expens
 }
 
 func (s SimpleExpenseRepository) DeleteSimpleExpense(ctx context.Context, expenseId uuid.UUID) error {
-	query := `DELETE FROM simple_expense WHERE id = $1`
+	query := `DELETE FROM simple_expense WHERE "ID" = $1`
 
 	result, err := s.db.Exec(ctx, query, expenseId)
 	if err != nil {
@@ -98,9 +118,9 @@ func (s SimpleExpenseRepository) DeleteSimpleExpense(ctx context.Context, expens
 
 func (s SimpleExpenseRepository) FindSimpleExpenseByID(ctx context.Context, expenseId uuid.UUID) (domain.SimpleExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, created_at, updated_at
 		FROM simple_expense 
-		WHERE id = $1`
+		WHERE "ID" = $1`
 
 	var expense domain.SimpleExpense
 
@@ -127,7 +147,7 @@ func (s SimpleExpenseRepository) FindSimpleExpenseByID(ctx context.Context, expe
 
 func (s SimpleExpenseRepository) FindSimpleExpenses(ctx context.Context, userId uuid.UUID, filters irepository.SimpleExpenseFilters) ([]domain.SimpleExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, created_at, updated_at
 		FROM simple_expense 
 		WHERE user_id = $1`
 
@@ -213,7 +233,7 @@ func (s SimpleExpenseRepository) FindSimpleExpenses(ctx context.Context, userId 
 
 func (s SimpleExpenseRepository) FindSimpleExpensesByUser(ctx context.Context, userId uuid.UUID) ([]domain.SimpleExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, created_at, updated_at
 		FROM simple_expense 
 		WHERE user_id = $1
 		ORDER BY date DESC, created_at DESC`
@@ -246,7 +266,7 @@ func (s SimpleExpenseRepository) FindSimpleExpensesByUser(ctx context.Context, u
 
 func (s SimpleExpenseRepository) FindSimpleExpensesByDateRange(ctx context.Context, userId uuid.UUID, startDate, endDate time.Time) ([]domain.SimpleExpense, error) {
 	query := `
-		SELECT id, user_id, category_id, amount, description, date, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, created_at, updated_at
 		FROM simple_expense 
 		WHERE user_id = $1 AND date >= $2 AND date <= $3
 		ORDER BY date DESC, created_at DESC`
