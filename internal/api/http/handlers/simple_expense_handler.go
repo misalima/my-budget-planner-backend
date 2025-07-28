@@ -19,6 +19,17 @@ func NewSimpleExpenseHandler(svc iservice.SimpleExpenseManager) *SimpleExpenseHa
 	return &SimpleExpenseHandler{svc: svc}
 }
 
+// CreateSimpleExpense godoc
+// @Summary Cria uma nova despesa simples
+// @Tags SimpleExpense
+// @Accept json
+// @Produce json
+// @Security bearerAuth
+// @Param expense body dto.SimpleExpenseDTO true "Dados da despesa simples"
+// @Success 201 {object} domain.SimpleExpense
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/simple [post]
 func (h *SimpleExpenseHandler) CreateSimpleExpense(ctx echo.Context) error {
 	var dtoReq dto.SimpleExpenseDTO
 	if err := ctx.Bind(&dtoReq); err != nil {
@@ -35,6 +46,17 @@ func (h *SimpleExpenseHandler) CreateSimpleExpense(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, created)
 }
 
+// GetSimpleExpenseByID godoc
+// @Summary Busca uma despesa simples por ID
+// @Tags SimpleExpense
+// @Produce json
+// @Security bearerAuth
+// @Param id path string true "ID da despesa"
+// @Success 200 {object} domain.SimpleExpense
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /expenses/simple/{id} [get]
 func (h *SimpleExpenseHandler) GetSimpleExpenseByID(ctx echo.Context) error {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -54,6 +76,22 @@ func (h *SimpleExpenseHandler) GetSimpleExpenseByID(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, expense)
 }
 
+// ListSimpleExpenses godoc
+// @Summary Lista despesas simples do usuário
+// @Tags SimpleExpense
+// @Produce json
+// @Security bearerAuth
+// @Param category_id query int false "ID da categoria"
+// @Param start_date query string false "Data inicial (YYYY-MM-DD)"
+// @Param end_date query string false "Data final (YYYY-MM-DD)"
+// @Param min_amount query number false "Valor mínimo"
+// @Param max_amount query number false "Valor máximo"
+// @Param limit query int false "Limite de resultados"
+// @Param offset query int false "Offset"
+// @Success 200 {array} domain.SimpleExpense
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/simple [get]
 func (h *SimpleExpenseHandler) ListSimpleExpenses(ctx echo.Context) error {
 	userID, ok := ctx.Get("user_id").(uuid.UUID)
 	if !ok || userID == uuid.Nil {
@@ -105,6 +143,18 @@ func (h *SimpleExpenseHandler) ListSimpleExpenses(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, expenses)
 }
 
+// UpdateSimpleExpense godoc
+// @Summary Atualiza uma despesa simples
+// @Tags SimpleExpense
+// @Accept json
+// @Produce json
+// @Security bearerAuth
+// @Param expense body dto.SimpleExpenseUpdateDTO true "Dados da despesa simples para atualização"
+// @Success 200 {object} domain.SimpleExpense
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/simple [put]
 func (h *SimpleExpenseHandler) UpdateSimpleExpense(ctx echo.Context) error {
 	var dtoReq dto.SimpleExpenseUpdateDTO
 	if err := ctx.Bind(&dtoReq); err != nil {
@@ -125,6 +175,17 @@ func (h *SimpleExpenseHandler) UpdateSimpleExpense(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, updated)
 }
 
+// DeleteSimpleExpense godoc
+// @Summary Remove uma despesa simples
+// @Tags SimpleExpense
+// @Produce json
+// @Security bearerAuth
+// @Param id path string true "ID da despesa"
+// @Success 204 {object} nil
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /expenses/simple/{id} [delete]
 func (h *SimpleExpenseHandler) DeleteSimpleExpense(ctx echo.Context) error {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -140,6 +201,16 @@ func (h *SimpleExpenseHandler) DeleteSimpleExpense(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNoContent, nil)
 }
 
+// GetSimpleExpenseSummary godoc
+// @Summary Resumo das despesas simples
+// @Tags SimpleExpense
+// @Produce json
+// @Security bearerAuth
+// @Param start_date query string false "Data inicial (YYYY-MM-DD)"
+// @Param end_date query string false "Data final (YYYY-MM-DD)"
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string
+// @Router /expenses/simple/summary [get]
 func (h *SimpleExpenseHandler) GetSimpleExpenseSummary(ctx echo.Context) error {
 	userID, ok := ctx.Get("user_id").(uuid.UUID)
 	if !ok || userID == uuid.Nil {

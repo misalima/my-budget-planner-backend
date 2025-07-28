@@ -1,0 +1,1366 @@
+basePath: /api
+definitions:
+  domain.Category:
+    properties:
+      category_name:
+        type: string
+      id:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  domain.CreditCard:
+    properties:
+      card_name:
+        type: string
+      created_at:
+        type: string
+      current_limit:
+        type: number
+      due_date:
+        type: integer
+      id:
+        type: string
+      total_limit:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.CreditCardExpense:
+    properties:
+      amount:
+        type: number
+      card_id:
+        type: string
+      category_id:
+        type: integer
+      created_at:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      installment_amount:
+        type: number
+      installments_quantity:
+        type: integer
+      parcel_number:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.RecurringExpense:
+    properties:
+      amount:
+        type: number
+      card_id:
+        type: string
+      category_id:
+        type: integer
+      created_at:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      end_date:
+        type: string
+      frequency:
+        type: string
+      id:
+        type: string
+      start_date:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  domain.SimpleExpense:
+    properties:
+      amount:
+        type: number
+      category_id:
+        type: integer
+      created_at:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.CreateCategoryDTO:
+    properties:
+      name:
+        type: string
+    type: object
+  dto.CreateUserDTO:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.CreditCardDTO:
+    properties:
+      card_name:
+        type: string
+      current_limit:
+        type: number
+      due_date:
+        type: integer
+      total_limit:
+        type: number
+    type: object
+  dto.CreditCardExpenseDTO:
+    properties:
+      amount:
+        type: number
+      card_id:
+        type: string
+      category_id:
+        type: integer
+      date:
+        type: string
+      description:
+        type: string
+      installment_amount:
+        type: number
+      installments_quantity:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  dto.CreditCardExpenseUpdateDTO:
+    properties:
+      amount:
+        type: number
+      card_id:
+        type: string
+      category_id:
+        type: integer
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      installment_amount:
+        type: number
+      installments_quantity:
+        type: integer
+      parcel_number:
+        type: integer
+    type: object
+  dto.RecurringExpenseDTO:
+    properties:
+      amount:
+        type: number
+      card_id:
+        type: string
+      category_id:
+        type: integer
+      date:
+        type: string
+      description:
+        type: string
+      end_date:
+        type: string
+      frequency:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.RecurringExpenseUpdateDTO:
+    properties:
+      amount:
+        type: number
+      card_id:
+        type: string
+      category_id:
+        type: integer
+      date:
+        type: string
+      description:
+        type: string
+      end_date:
+        type: string
+      frequency:
+        type: string
+      id:
+        type: string
+      start_date:
+        type: string
+    type: object
+  dto.RefreshTokenDTO:
+    properties:
+      token:
+        type: string
+    type: object
+  dto.SimpleExpenseDTO:
+    properties:
+      amount:
+        type: number
+      category_id:
+        type: integer
+      date:
+        type: string
+      description:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.SimpleExpenseUpdateDTO:
+    properties:
+      amount:
+        type: number
+      category_id:
+        type: integer
+      date:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+    type: object
+  handlers.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact:
+    email: misael.alisson14@gmail.com
+    name: Misael Lima
+    url: http://www.linkedin.com/misaellima
+  description: This is the backend API for My Budget Planner, an expense tracker and
+    budget manager.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: My Budget Planner API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Credenciais de login
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Realiza login do usuário
+      tags:
+      - Auth
+  /auth/refresh:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Token de atualização
+        in: body
+        name: refreshToken
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshTokenDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Atualiza o token de acesso (refresh token)
+      tags:
+      - Auth
+  /category:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Category'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Lista categorias do usuário autenticado
+      tags:
+      - Category
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da categoria
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCategoryDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Category'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Cria uma nova categoria
+      tags:
+      - Category
+  /category/{id}:
+    delete:
+      parameters:
+      - description: ID da categoria
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Remove uma categoria
+      tags:
+      - Category
+  /credit-cards:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.CreditCard'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Busca todos os cartões de crédito do usuário
+      tags:
+      - CreditCard
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do cartão de crédito
+        in: body
+        name: credit_card
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreditCardDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.CreditCard'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Cria um novo cartão de crédito
+      tags:
+      - CreditCard
+  /credit-cards/{id}:
+    delete:
+      parameters:
+      - description: ID do cartão
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Remove um cartão de crédito
+      tags:
+      - CreditCard
+    get:
+      parameters:
+      - description: ID do cartão
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.CreditCard'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Busca um cartão de crédito por ID
+      tags:
+      - CreditCard
+  /expenses/credit-card:
+    get:
+      parameters:
+      - description: ID da categoria
+        in: query
+        name: category_id
+        type: integer
+      - description: ID do cartão
+        in: query
+        name: card_id
+        type: string
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Valor mínimo
+        in: query
+        name: min_amount
+        type: number
+      - description: Valor máximo
+        in: query
+        name: max_amount
+        type: number
+      - description: Número de parcelas
+        in: query
+        name: installments_number
+        type: integer
+      - description: Limite de resultados
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.CreditCardExpense'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Lista despesas de cartão de crédito do usuário
+      tags:
+      - CreditCardExpense
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da despesa de cartão de crédito
+        in: body
+        name: expense
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreditCardExpenseDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.CreditCardExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Cria uma nova despesa de cartão de crédito
+      tags:
+      - CreditCardExpense
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da despesa de cartão de crédito para atualização
+        in: body
+        name: expense
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreditCardExpenseUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.CreditCardExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Atualiza uma despesa de cartão de crédito
+      tags:
+      - CreditCardExpense
+  /expenses/credit-card/{id}:
+    delete:
+      parameters:
+      - description: ID da despesa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Remove uma despesa de cartão de crédito
+      tags:
+      - CreditCardExpense
+    get:
+      parameters:
+      - description: ID da despesa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.CreditCardExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Busca uma despesa de cartão de crédito por ID
+      tags:
+      - CreditCardExpense
+  /expenses/credit-card/summary:
+    get:
+      parameters:
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Resumo das despesas de cartão de crédito
+      tags:
+      - CreditCardExpense
+  /expenses/recurring:
+    get:
+      parameters:
+      - description: ID da categoria
+        in: query
+        name: category_id
+        type: integer
+      - description: ID do cartão
+        in: query
+        name: card_id
+        type: string
+      - description: Frequência
+        in: query
+        name: frequency
+        type: string
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Valor mínimo
+        in: query
+        name: min_amount
+        type: number
+      - description: Valor máximo
+        in: query
+        name: max_amount
+        type: number
+      - description: Limite de resultados
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.RecurringExpense'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Lista despesas recorrentes do usuário
+      tags:
+      - RecurringExpense
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da despesa recorrente
+        in: body
+        name: expense
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecurringExpenseDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.RecurringExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Cria uma nova despesa recorrente
+      tags:
+      - RecurringExpense
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da despesa recorrente para atualização
+        in: body
+        name: expense
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RecurringExpenseUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.RecurringExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Atualiza uma despesa recorrente
+      tags:
+      - RecurringExpense
+  /expenses/recurring/{id}:
+    delete:
+      parameters:
+      - description: ID da despesa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Remove uma despesa recorrente
+      tags:
+      - RecurringExpense
+    get:
+      parameters:
+      - description: ID da despesa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.RecurringExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Busca uma despesa recorrente por ID
+      tags:
+      - RecurringExpense
+  /expenses/recurring/generate:
+    post:
+      parameters:
+      - description: Data alvo (YYYY-MM-DD)
+        in: query
+        name: target_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Gera despesas recorrentes para uma data alvo
+      tags:
+      - RecurringExpense
+  /expenses/recurring/summary:
+    get:
+      parameters:
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Resumo das despesas recorrentes
+      tags:
+      - RecurringExpense
+  /expenses/simple:
+    get:
+      parameters:
+      - description: ID da categoria
+        in: query
+        name: category_id
+        type: integer
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Valor mínimo
+        in: query
+        name: min_amount
+        type: number
+      - description: Valor máximo
+        in: query
+        name: max_amount
+        type: number
+      - description: Limite de resultados
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.SimpleExpense'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Lista despesas simples do usuário
+      tags:
+      - SimpleExpense
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da despesa simples
+        in: body
+        name: expense
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SimpleExpenseDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.SimpleExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Cria uma nova despesa simples
+      tags:
+      - SimpleExpense
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da despesa simples para atualização
+        in: body
+        name: expense
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SimpleExpenseUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.SimpleExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Atualiza uma despesa simples
+      tags:
+      - SimpleExpense
+  /expenses/simple/{id}:
+    delete:
+      parameters:
+      - description: ID da despesa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Remove uma despesa simples
+      tags:
+      - SimpleExpense
+    get:
+      parameters:
+      - description: ID da despesa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.SimpleExpense'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Busca uma despesa simples por ID
+      tags:
+      - SimpleExpense
+  /expenses/simple/summary:
+    get:
+      parameters:
+      - description: Data inicial (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Data final (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - bearerAuth: []
+      summary: Resumo das despesas simples
+      tags:
+      - SimpleExpense
+  /health:
+    get:
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Server is running
+          schema:
+            type: string
+      summary: Health check do servidor
+      tags:
+      - Health
+  /users:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: JSON com as informações de Login de usuário.
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria um novo usuário
+      tags:
+      - User
+securityDefinitions:
+  bearerAuth:
+    description: Token JWT para autenticação via header Authorization
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
