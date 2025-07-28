@@ -4,7 +4,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/misalima/my-budget-planner-backend/internal/api/http/auth"
 	"github.com/misalima/my-budget-planner-backend/internal/api/http/handlers"
-	"net/http"
 )
 
 func LoadRoutes(
@@ -18,15 +17,12 @@ func LoadRoutes(
 	creditCardExpenseHandler *handlers.CreditCardExpenseHandler,
 ) {
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
 	e.GET("/health", handlers.HealthHandler)
-	e.POST("/signup", userHandler.CreateUserHandler)
+	e.POST("/users", userHandler.CreateUserHandler)
 
 	//auth routes
-	e.POST("/auth/login", authHandler.Login)
-	e.GET("/auth/refresh", authHandler.RefreshTokenHandler)
+	e.POST("/api/auth/login", authHandler.Login)
+	e.GET("/api/auth/refresh", authHandler.RefreshTokenHandler)
 
 	//category routes
 	categoryGroup := e.Group("/category")
