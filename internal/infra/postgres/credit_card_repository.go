@@ -16,7 +16,7 @@ func NewCreditCardRepository(db *pgxpool.Pool) *CreditCardRepository {
 }
 
 func (r *CreditCardRepository) FetchAllByUserID(ctx context.Context, userID uuid.UUID) ([]domain.CreditCard, error) {
-	rows, err := r.db.Query(ctx, "SELECT 'ID', user_id, card_name, total_limit, current_limit, due_date, created_at, updated_at FROM credit_cards WHERE user_id=$1", userID)
+	rows, err := r.db.Query(ctx, `SELECT "ID", user_id, card_name, total_limit, current_limit, due_date, created_at, updated_at FROM credit_cards WHERE user_id=$1`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (r *CreditCardRepository) FetchAllByUserID(ctx context.Context, userID uuid
 }
 
 func (r *CreditCardRepository) FetchOneByID(ctx context.Context, id uuid.UUID) (*domain.CreditCard, error) {
-	row := r.db.QueryRow(ctx, "SELECT 'ID', user_id, card_name, total_limit, current_limit, due_date, created_at, updated_at FROM credit_cards WHERE 'ID'=$1", id)
+	row := r.db.QueryRow(ctx, `SELECT "ID", user_id, card_name, total_limit, current_limit, due_date, created_at, updated_at FROM credit_cards WHERE "ID"=$1`, id)
 
 	var cc domain.CreditCard
 	if err := row.Scan(&cc.ID, &cc.UserID, &cc.CardName, &cc.TotalLimit, &cc.CurrentLimit, &cc.DueDate, &cc.CreatedAt, &cc.UpdatedAt); err != nil {
@@ -49,12 +49,12 @@ func (r *CreditCardRepository) FetchOneByID(ctx context.Context, id uuid.UUID) (
 }
 
 func (r *CreditCardRepository) Create(ctx context.Context, cc *domain.CreditCard) error {
-	_, err := r.db.Exec(ctx, "INSERT INTO credit_cards ('ID', user_id, card_name, total_limit, current_limit, due_date, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+	_, err := r.db.Exec(ctx, `INSERT INTO credit_cards ("ID", user_id, card_name, total_limit, current_limit, due_date, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		cc.ID, cc.UserID, cc.CardName, cc.TotalLimit, cc.CurrentLimit, cc.DueDate, cc.CreatedAt, cc.UpdatedAt)
 	return err
 }
 
 func (r *CreditCardRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	_, err := r.db.Exec(ctx, "DELETE FROM credit_cards WHERE 'ID'=$1", id)
+	_, err := r.db.Exec(ctx, `DELETE FROM credit_cards WHERE "ID"=$1`, id)
 	return err
 }

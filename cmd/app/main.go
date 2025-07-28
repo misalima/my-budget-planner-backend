@@ -67,6 +67,9 @@ func setUpHandlers(e *echo.Echo, container *container.Container) {
 	authHandler := handlers.NewAuthHandler(container.AuthManager)
 	categoryHandler := handlers.NewCategoryHandler(container.CategoryManager)
 	creditCardHandler := handlers.NewCreditCardHandler(container.CreditCardManager)
+	simpleExpenseHandler := handlers.NewSimpleExpenseHandler(container.ExpenseManagers.SimpleExpenseManager)
+	recurringExpenseHandler := handlers.NewRecurringExpenseHandler(container.ExpenseManagers.RecurringExpenseManager)
+	creditCardExpenseHandler := handlers.NewCreditCardExpenseHandler(container.ExpenseManagers.CreditCardExpenseManager)
 
-	router.LoadRoutes(e, userHandler, authHandler, categoryHandler, creditCardHandler)
+	router.LoadRoutes(e, userHandler, authHandler, categoryHandler, creditCardHandler, simpleExpenseHandler, recurringExpenseHandler, creditCardExpenseHandler)
 }
