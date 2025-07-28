@@ -19,6 +19,17 @@ func NewRecurringExpenseHandler(svc iservice.RecurringExpenseManager) *Recurring
 	return &RecurringExpenseHandler{svc: svc}
 }
 
+// CreateRecurringExpense godoc
+// @Summary Cria uma nova despesa recorrente
+// @Tags RecurringExpense
+// @Accept json
+// @Produce json
+// @Security bearerAuth
+// @Param expense body dto.RecurringExpenseDTO true "Dados da despesa recorrente"
+// @Success 201 {object} domain.RecurringExpense
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/recurring [post]
 func (h *RecurringExpenseHandler) CreateRecurringExpense(ctx echo.Context) error {
 	var dtoReq dto.RecurringExpenseDTO
 	if err := ctx.Bind(&dtoReq); err != nil {
@@ -35,6 +46,17 @@ func (h *RecurringExpenseHandler) CreateRecurringExpense(ctx echo.Context) error
 	return ctx.JSON(http.StatusCreated, created)
 }
 
+// GetRecurringExpenseByID godoc
+// @Summary Busca uma despesa recorrente por ID
+// @Tags RecurringExpense
+// @Produce json
+// @Security bearerAuth
+// @Param id path string true "ID da despesa"
+// @Success 200 {object} domain.RecurringExpense
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /expenses/recurring/{id} [get]
 func (h *RecurringExpenseHandler) GetRecurringExpenseByID(ctx echo.Context) error {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -51,6 +73,24 @@ func (h *RecurringExpenseHandler) GetRecurringExpenseByID(ctx echo.Context) erro
 	return ctx.JSON(http.StatusOK, expense)
 }
 
+// ListRecurringExpenses godoc
+// @Summary Lista despesas recorrentes do usuário
+// @Tags RecurringExpense
+// @Produce json
+// @Security bearerAuth
+// @Param category_id query int false "ID da categoria"
+// @Param card_id query string false "ID do cartão"
+// @Param frequency query string false "Frequência"
+// @Param start_date query string false "Data inicial (YYYY-MM-DD)"
+// @Param end_date query string false "Data final (YYYY-MM-DD)"
+// @Param min_amount query number false "Valor mínimo"
+// @Param max_amount query number false "Valor máximo"
+// @Param limit query int false "Limite de resultados"
+// @Param offset query int false "Offset"
+// @Success 200 {array} domain.RecurringExpense
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/recurring [get]
 func (h *RecurringExpenseHandler) ListRecurringExpenses(ctx echo.Context) error {
 	userID, ok := ctx.Get("user_id").(uuid.UUID)
 	if !ok || userID == uuid.Nil {
@@ -110,6 +150,18 @@ func (h *RecurringExpenseHandler) ListRecurringExpenses(ctx echo.Context) error 
 	return ctx.JSON(http.StatusOK, expenses)
 }
 
+// UpdateRecurringExpense godoc
+// @Summary Atualiza uma despesa recorrente
+// @Tags RecurringExpense
+// @Accept json
+// @Produce json
+// @Security bearerAuth
+// @Param expense body dto.RecurringExpenseUpdateDTO true "Dados da despesa recorrente para atualização"
+// @Success 200 {object} domain.RecurringExpense
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/recurring [put]
 func (h *RecurringExpenseHandler) UpdateRecurringExpense(ctx echo.Context) error {
 	var dtoReq dto.RecurringExpenseUpdateDTO
 	if err := ctx.Bind(&dtoReq); err != nil {
@@ -130,6 +182,17 @@ func (h *RecurringExpenseHandler) UpdateRecurringExpense(ctx echo.Context) error
 	return ctx.JSON(http.StatusOK, updated)
 }
 
+// DeleteRecurringExpense godoc
+// @Summary Remove uma despesa recorrente
+// @Tags RecurringExpense
+// @Produce json
+// @Security bearerAuth
+// @Param id path string true "ID da despesa"
+// @Success 204 {object} nil
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /expenses/recurring/{id} [delete]
 func (h *RecurringExpenseHandler) DeleteRecurringExpense(ctx echo.Context) error {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -145,6 +208,18 @@ func (h *RecurringExpenseHandler) DeleteRecurringExpense(ctx echo.Context) error
 	return ctx.JSON(http.StatusNoContent, nil)
 }
 
+// GetRecurringExpenseSummary godoc
+// @Summary Resumo das despesas recorrentes
+// @Tags RecurringExpense
+// @Produce json
+// @Security bearerAuth
+// @Param start_date query string false "Data inicial (YYYY-MM-DD)"
+// @Param end_date query string false "Data final (YYYY-MM-DD)"
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/recurring/summary [get]
 func (h *RecurringExpenseHandler) GetRecurringExpenseSummary(ctx echo.Context) error {
 	userID, ok := ctx.Get("user_id").(uuid.UUID)
 	if !ok || userID == uuid.Nil {
@@ -167,6 +242,17 @@ func (h *RecurringExpenseHandler) GetRecurringExpenseSummary(ctx echo.Context) e
 	return ctx.JSON(http.StatusOK, summary)
 }
 
+// GenerateRecurringExpenses godoc
+// @Summary Gera despesas recorrentes para uma data alvo
+// @Tags RecurringExpense
+// @Produce json
+// @Security bearerAuth
+// @Param target_date query string true "Data alvo (YYYY-MM-DD)"
+// @Success 200 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/recurring/generate [post]
 func (h *RecurringExpenseHandler) GenerateRecurringExpenses(ctx echo.Context) error {
 	userID, ok := ctx.Get("user_id").(uuid.UUID)
 	if !ok || userID == uuid.Nil {

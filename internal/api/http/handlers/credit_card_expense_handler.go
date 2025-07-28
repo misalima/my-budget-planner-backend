@@ -19,6 +19,18 @@ func NewCreditCardExpenseHandler(svc iservice.CreditCardExpenseManager) *CreditC
 	return &CreditCardExpenseHandler{svc: svc}
 }
 
+// CreateCreditCardExpense godoc
+// @Summary Cria uma nova despesa de cartão de crédito
+// @Tags CreditCardExpense
+// @Accept json
+// @Produce json
+// @Security bearerAuth
+// @Param expense body dto.CreditCardExpenseDTO true "Dados da despesa de cartão de crédito"
+// @Success 201 {object} domain.CreditCardExpense
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/credit-card [post]
 func (h *CreditCardExpenseHandler) CreateCreditCardExpense(ctx echo.Context) error {
 	var dtoReq dto.CreditCardExpenseDTO
 	if err := ctx.Bind(&dtoReq); err != nil {
@@ -41,6 +53,17 @@ func (h *CreditCardExpenseHandler) CreateCreditCardExpense(ctx echo.Context) err
 	return ctx.JSON(http.StatusCreated, created)
 }
 
+// GetCreditCardExpenseByID godoc
+// @Summary Busca uma despesa de cartão de crédito por ID
+// @Tags CreditCardExpense
+// @Produce json
+// @Security bearerAuth
+// @Param id path string true "ID da despesa"
+// @Success 200 {object} domain.CreditCardExpense
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /expenses/credit-card/{id} [get]
 func (h *CreditCardExpenseHandler) GetCreditCardExpenseByID(ctx echo.Context) error {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -57,6 +80,24 @@ func (h *CreditCardExpenseHandler) GetCreditCardExpenseByID(ctx echo.Context) er
 	return ctx.JSON(http.StatusOK, expense)
 }
 
+// ListCreditCardExpenses godoc
+// @Summary Lista despesas de cartão de crédito do usuário
+// @Tags CreditCardExpense
+// @Produce json
+// @Security bearerAuth
+// @Param category_id query int false "ID da categoria"
+// @Param card_id query string false "ID do cartão"
+// @Param start_date query string false "Data inicial (YYYY-MM-DD)"
+// @Param end_date query string false "Data final (YYYY-MM-DD)"
+// @Param min_amount query number false "Valor mínimo"
+// @Param max_amount query number false "Valor máximo"
+// @Param installments_number query int false "Número de parcelas"
+// @Param limit query int false "Limite de resultados"
+// @Param offset query int false "Offset"
+// @Success 200 {array} domain.CreditCardExpense
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/credit-card [get]
 func (h *CreditCardExpenseHandler) ListCreditCardExpenses(ctx echo.Context) error {
 	userID, ok := ctx.Get("user_id").(uuid.UUID)
 	if !ok || userID == uuid.Nil {
@@ -118,6 +159,18 @@ func (h *CreditCardExpenseHandler) ListCreditCardExpenses(ctx echo.Context) erro
 	return ctx.JSON(http.StatusOK, expenses)
 }
 
+// UpdateCreditCardExpense godoc
+// @Summary Atualiza uma despesa de cartão de crédito
+// @Tags CreditCardExpense
+// @Accept json
+// @Produce json
+// @Security bearerAuth
+// @Param expense body dto.CreditCardExpenseUpdateDTO true "Dados da despesa de cartão de crédito para atualização"
+// @Success 200 {object} domain.CreditCardExpense
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /expenses/credit-card [put]
 func (h *CreditCardExpenseHandler) UpdateCreditCardExpense(ctx echo.Context) error {
 	var dtoReq dto.CreditCardExpenseUpdateDTO
 	if err := ctx.Bind(&dtoReq); err != nil {
@@ -138,6 +191,17 @@ func (h *CreditCardExpenseHandler) UpdateCreditCardExpense(ctx echo.Context) err
 	return ctx.JSON(http.StatusOK, updated)
 }
 
+// DeleteCreditCardExpense godoc
+// @Summary Remove uma despesa de cartão de crédito
+// @Tags CreditCardExpense
+// @Produce json
+// @Security bearerAuth
+// @Param id path string true "ID da despesa"
+// @Success 204 {object} nil
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /expenses/credit-card/{id} [delete]
 func (h *CreditCardExpenseHandler) DeleteCreditCardExpense(ctx echo.Context) error {
 	id, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -153,6 +217,16 @@ func (h *CreditCardExpenseHandler) DeleteCreditCardExpense(ctx echo.Context) err
 	return ctx.JSON(http.StatusNoContent, nil)
 }
 
+// GetCreditCardExpenseSummary godoc
+// @Summary Resumo das despesas de cartão de crédito
+// @Tags CreditCardExpense
+// @Produce json
+// @Security bearerAuth
+// @Param start_date query string false "Data inicial (YYYY-MM-DD)"
+// @Param end_date query string false "Data final (YYYY-MM-DD)"
+// @Success 200 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string
+// @Router /expenses/credit-card/summary [get]
 func (h *CreditCardExpenseHandler) GetCreditCardExpenseSummary(ctx echo.Context) error {
 	userID, ok := ctx.Get("user_id").(uuid.UUID)
 	if !ok || userID == uuid.Nil {

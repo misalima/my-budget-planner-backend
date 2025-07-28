@@ -13,6 +13,29 @@ import (
 	"os"
 )
 
+//	@title			My Budget Planner API
+//	@version		1.0
+//	@description	This is the backend API for My Budget Planner, an expense tracker and budget manager.
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	Misael Lima
+//	@contact.url	http://www.linkedin.com/misaellima
+//	@contact.email	misael.alisson14@gmail.com
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@host		localhost:8000
+//	@BasePath	/api
+
+//	@securityDefinitions.apikey	bearerAuth
+//	@type 						http
+// @scheme 						bearer
+//	@in							header
+//	@name						Authorization
+//	@description				Token JWT para autenticação via header Authorization
+//	@bearerFormat				JWT
+
 func main() {
 
 	e := echo.New()
