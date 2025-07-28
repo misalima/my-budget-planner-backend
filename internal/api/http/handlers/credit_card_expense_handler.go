@@ -4,7 +4,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/misalima/my-budget-planner-backend/internal/api/http/handlers/dto"
-	"github.com/misalima/my-budget-planner-backend/internal/core/domain"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/irepository"
 	"github.com/misalima/my-budget-planner-backend/internal/core/interfaces/iservice"
 	"net/http"
@@ -25,6 +24,12 @@ func (h *CreditCardExpenseHandler) CreateCreditCardExpense(ctx echo.Context) err
 	if err := ctx.Bind(&dtoReq); err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
 	}
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
+	}
+	dtoReq.UserID = userID.String()
+
 	expense, err := dtoReq.ToDomain()
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
@@ -92,7 +97,7 @@ func (h *CreditCardExpenseHandler) ListCreditCardExpenses(ctx echo.Context) erro
 	}
 	if v := ctx.QueryParam("installments_number"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil {
-			filters.InstallmentsNumber = &n
+			filters.InstallmentsQuantity = &n
 		}
 	}
 	if v := ctx.QueryParam("limit"); v != "" {
@@ -168,24 +173,4 @@ func (h *CreditCardExpenseHandler) GetCreditCardExpenseSummary(ctx echo.Context)
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return ctx.JSON(http.StatusOK, summary)
-}
-
-func (h *CreditCardExpenseHandler) GenerateInstallments(ctx echo.Context) error {
-	userID, ok := ctx.Get("user_id").(uuid.UUID)
-	if !ok || userID == uuid.Nil {
-		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
-	}
-	var expense domain.CreditCardExpense
-	if err := ctx.Bind(&expense); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
-	}
-	expense.UserID = userID
-	if expense.InstallmentsNumber == 0 {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "installments number must be greater than zero"})
-	}
-	installments, err := h.svc.GenerateInstallments(ctx.Request().Context(), expense)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
-	}
-	return ctx.JSON(http.StatusOK, installments)
 }

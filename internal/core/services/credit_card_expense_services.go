@@ -17,6 +17,21 @@ func NewCreditCardExpenseService(repo irepository.CreditCardExpenseLoader) *Cred
 }
 
 func (s *CreditCardExpenseService) CreateCreditCardExpense(ctx context.Context, expense domain.CreditCardExpense) (domain.CreditCardExpense, error) {
+	if expense.InstallmentsQuantity > 1 {
+		installments := make([]domain.CreditCardExpense, expense.InstallmentsQuantity)
+		for i := 0; i < expense.InstallmentsQuantity; i++ {
+			inst := expense
+			inst.ID = uuid.New()
+			inst.Date = expense.Date.AddDate(0, i, 0)
+			inst.ParcelNumber = i + 1
+			installments[i] = inst
+		}
+		err := s.repo.InsertInstallments(ctx, installments)
+		if err != nil {
+			return domain.CreditCardExpense{}, err
+		}
+		return installments[0], nil
+	}
 	return s.repo.InsertCreditCardExpense(ctx, expense)
 }
 
@@ -50,11 +65,6 @@ func (s *CreditCardExpenseService) ListCreditCardExpenses(ctx context.Context, u
 	return s.repo.FindCreditCardExpenses(ctx, userID, filters)
 }
 
-func (s *CreditCardExpenseService) GenerateInstallments(ctx context.Context, expense domain.CreditCardExpense) ([]domain.CreditCardExpense, error) {
-	// Lógica de geração de parcelas pode ser implementada conforme a regra de negócio
-	return nil, nil
-}
-
 func (s *CreditCardExpenseService) GetCreditCardExpenseSummary(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) (domain.CreditCardExpenseSummary, error) {
 	expenses, err := s.repo.FindCreditCardExpensesByDateRange(ctx, userID, startDate, endDate)
 	if err != nil {
@@ -69,7 +79,7 @@ func (s *CreditCardExpenseService) GetCreditCardExpenseSummary(ctx context.Conte
 		summary.TotalCount++
 		summary.ByCard[e.CardID] += e.Amount
 		summary.ByCategory[e.CategoryID] += e.Amount
-		summary.ByInstallmentsNumber[e.InstallmentsNumber] += e.Amount
+		summary.ByInstallmentsNumber[e.InstallmentsQuantity] += e.Amount
 	}
 	if summary.TotalCount > 0 {
 		summary.AverageAmount = summary.TotalAmount / float64(summary.TotalCount)

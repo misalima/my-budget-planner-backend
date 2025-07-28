@@ -14,6 +14,5 @@ type CreditCardExpenseManager interface {
 	DeleteCreditCardExpense(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	GetCreditCardExpenseByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (domain.CreditCardExpense, error)
 	ListCreditCardExpenses(ctx context.Context, userID uuid.UUID, filters irepository.CreditCardExpenseFilters) ([]domain.CreditCardExpense, error)
-	GenerateInstallments(ctx context.Context, expense domain.CreditCardExpense) ([]domain.CreditCardExpense, error)
 	GetCreditCardExpenseSummary(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) (domain.CreditCardExpenseSummary, error)
 }

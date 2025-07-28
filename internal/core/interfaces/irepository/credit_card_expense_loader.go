@@ -19,13 +19,14 @@ type CreditCardExpenseLoader interface {
 }
 
 type CreditCardExpenseFilters struct {
-	CategoryID         *int
-	CardID             *uuid.UUID
-	StartDate          *time.Time
-	EndDate            *time.Time
-	MinAmount          *float64
-	MaxAmount          *float64
-	InstallmentsNumber *int
-	Limit              *int
-	Offset             *int
+	CategoryID           *int
+	CardID               *uuid.UUID
+	StartDate            *time.Time
+	EndDate              *time.Time
+	MinAmount            *float64
+	MaxAmount            *float64
+	InstallmentsQuantity *int
+	ParcelNumber         *int
+	Limit                *int
+	Offset               *int
 }

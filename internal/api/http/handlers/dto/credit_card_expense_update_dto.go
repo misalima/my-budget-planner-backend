@@ -7,14 +7,15 @@ import (
 )
 
 type CreditCardExpenseUpdateDTO struct {
-	ID                 string   `json:"id"`
-	CategoryID         *int     `json:"category_id,omitempty"`
-	Amount             *float64 `json:"amount,omitempty"`
-	Description        *string  `json:"description,omitempty"`
-	Date               *string  `json:"date,omitempty"`
-	CardID             *string  `json:"card_id,omitempty"`
-	InstallmentAmount  *float64 `json:"installment_amount,omitempty"`
-	InstallmentsNumber *int     `json:"installments_number,omitempty"`
+	ID                   string   `json:"id"`
+	CategoryID           *int     `json:"category_id,omitempty"`
+	Amount               *float64 `json:"amount,omitempty"`
+	Description          *string  `json:"description,omitempty"`
+	Date                 *string  `json:"date,omitempty"`
+	CardID               *string  `json:"card_id,omitempty"`
+	InstallmentAmount    *float64 `json:"installment_amount,omitempty"`
+	InstallmentsQuantity *int     `json:"installments_quantity,omitempty"`
+	ParcelNumber         *int     `json:"parcel_number,omitempty"`
 }
 
 func (dto *CreditCardExpenseUpdateDTO) ToDomain(userID uuid.UUID) (domain.CreditCardExpense, error) {
@@ -29,22 +30,16 @@ func (dto *CreditCardExpenseUpdateDTO) ToDomain(userID uuid.UUID) (domain.Credit
 			return domain.CreditCardExpense{}, err
 		}
 	}
-	var cardID uuid.UUID
-	if dto.CardID != nil {
-		cardID, err = uuid.Parse(*dto.CardID)
-		if err != nil {
-			return domain.CreditCardExpense{}, err
-		}
-	}
 	return domain.CreditCardExpense{
-		ID:                 id,
-		UserID:             userID,
-		CategoryID:         GetIntValue(dto.CategoryID),
-		Amount:             GetFloatValue(dto.Amount),
-		Description:        dto.Description,
-		Date:               date,
-		CardID:             cardID,
-		InstallmentAmount:  GetFloatValue(dto.InstallmentAmount),
-		InstallmentsNumber: GetIntValue(dto.InstallmentsNumber),
+		ID:                   id,
+		UserID:               userID,
+		CategoryID:           GetIntValue(dto.CategoryID),
+		Amount:               GetFloatValue(dto.Amount),
+		Description:          dto.Description,
+		Date:                 date,
+		CardID:               GetUUIDValue(dto.CardID),
+		InstallmentAmount:    GetFloatValue(dto.InstallmentAmount),
+		InstallmentsQuantity: GetIntValue(dto.InstallmentsQuantity),
+		ParcelNumber:         GetIntValue(dto.ParcelNumber),
 	}, nil
 }

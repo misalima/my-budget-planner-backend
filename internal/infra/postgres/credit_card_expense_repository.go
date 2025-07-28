@@ -18,8 +18,8 @@ type CreditCardExpenseRepository struct {
 
 func (c CreditCardExpenseRepository) InsertCreditCardExpense(ctx context.Context, expense domain.CreditCardExpense) (domain.CreditCardExpense, error) {
 	query := `
-		INSERT INTO credit_card_expense (user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		INSERT INTO credit_card_expense (user_id, category_id, amount, description, date, card_id, installment_amount, installments_quantity, parcel_number, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING "ID"`
 
 	now := time.Now()
@@ -28,7 +28,7 @@ func (c CreditCardExpenseRepository) InsertCreditCardExpense(ctx context.Context
 
 	err := c.db.QueryRow(ctx, query,
 		expense.UserID, expense.CategoryID, expense.Amount, expense.Description, expense.Date,
-		expense.CardID, expense.InstallmentAmount, expense.InstallmentsNumber, expense.CreatedAt, expense.UpdatedAt,
+		expense.CardID, expense.InstallmentAmount, expense.InstallmentsQuantity, expense.ParcelNumber, expense.CreatedAt, expense.UpdatedAt,
 	).Scan(&expense.ID)
 
 	if err != nil {
@@ -73,9 +73,14 @@ func (c CreditCardExpenseRepository) UpdateCreditCardExpense(ctx context.Context
 		args = append(args, expense.InstallmentAmount)
 		argCount++
 	}
-	if expense.InstallmentsNumber != 0 {
-		query += "installments_number = $" + strconv.Itoa(argCount) + ", "
-		args = append(args, expense.InstallmentsNumber)
+	if expense.InstallmentsQuantity != 0 {
+		query += "installments_quantity = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.InstallmentsQuantity)
+		argCount++
+	}
+	if expense.ParcelNumber != 0 {
+		query += "parcel_number = $" + strconv.Itoa(argCount) + ", "
+		args = append(args, expense.ParcelNumber)
 		argCount++
 	}
 	query += "updated_at = $" + strconv.Itoa(argCount)
@@ -85,13 +90,13 @@ func (c CreditCardExpenseRepository) UpdateCreditCardExpense(ctx context.Context
 	query += " WHERE \"ID\" = $" + strconv.Itoa(argCount) + " AND user_id = $" + strconv.Itoa(argCount+1)
 	args = append(args, expense.ID, expense.UserID)
 
-	query += " RETURNING \"ID\", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at"
+	query += " RETURNING \"ID\", user_id, category_id, amount, description, date, card_id, installment_amount, installments_quantity, parcel_number, created_at, updated_at"
 
 	row := c.db.QueryRow(ctx, query, args...)
 
 	err := row.Scan(
 		&expense.ID, &expense.UserID, &expense.CategoryID, &expense.Amount, &expense.Description,
-		&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsNumber,
+		&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsQuantity, &expense.ParcelNumber,
 		&expense.CreatedAt, &expense.UpdatedAt,
 	)
 
@@ -122,7 +127,7 @@ func (c CreditCardExpenseRepository) DeleteCreditCardExpense(ctx context.Context
 
 func (c CreditCardExpenseRepository) FindCreditCardExpenseByID(ctx context.Context, id uuid.UUID) (domain.CreditCardExpense, error) {
 	query := `
-		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_quantity, parcel_number, created_at, updated_at
 		FROM credit_card_expense 
 		WHERE "ID" = $1`
 
@@ -130,7 +135,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpenseByID(ctx context.Conte
 
 	err := c.db.QueryRow(ctx, query, id).Scan(
 		&expense.ID, &expense.UserID, &expense.CategoryID, &expense.Amount, &expense.Description,
-		&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsNumber,
+		&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsQuantity, &expense.ParcelNumber,
 		&expense.CreatedAt, &expense.UpdatedAt,
 	)
 
@@ -146,7 +151,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpenseByID(ctx context.Conte
 
 func (c CreditCardExpenseRepository) FindCreditCardExpenses(ctx context.Context, userID uuid.UUID, filters irepository.CreditCardExpenseFilters) ([]domain.CreditCardExpense, error) {
 	query := `
-		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_quantity, parcel_number, created_at, updated_at
 		FROM credit_card_expense 
 		WHERE user_id = $1`
 
@@ -190,9 +195,14 @@ func (c CreditCardExpenseRepository) FindCreditCardExpenses(ctx context.Context,
 		argCount++
 	}
 
-	if filters.InstallmentsNumber != nil {
-		query += fmt.Sprintf(" AND installments_number = $%d", argCount)
-		args = append(args, *filters.InstallmentsNumber)
+	if filters.InstallmentsQuantity != nil {
+		query += fmt.Sprintf(" AND installments_quantity = $%d", argCount)
+		args = append(args, *filters.InstallmentsQuantity)
+		argCount++
+	}
+	if filters.ParcelNumber != nil {
+		query += fmt.Sprintf(" AND parcel_number = $%d", argCount)
+		args = append(args, *filters.ParcelNumber)
 		argCount++
 	}
 
@@ -221,7 +231,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpenses(ctx context.Context,
 		var expense domain.CreditCardExpense
 		err := rows.Scan(
 			&expense.ID, &expense.UserID, &expense.CategoryID, &expense.Amount, &expense.Description,
-			&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsNumber,
+			&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsQuantity, &expense.ParcelNumber,
 			&expense.CreatedAt, &expense.UpdatedAt,
 		)
 		if err != nil {
@@ -239,7 +249,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpenses(ctx context.Context,
 
 func (c CreditCardExpenseRepository) FindCreditCardExpensesByUser(ctx context.Context, userID uuid.UUID) ([]domain.CreditCardExpense, error) {
 	query := `
-		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_quantity, parcel_number, created_at, updated_at
 		FROM credit_card_expense 
 		WHERE user_id = $1
 		ORDER BY date DESC, created_at DESC`
@@ -255,7 +265,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpensesByUser(ctx context.Co
 		var expense domain.CreditCardExpense
 		err := rows.Scan(
 			&expense.ID, &expense.UserID, &expense.CategoryID, &expense.Amount, &expense.Description,
-			&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsNumber,
+			&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsQuantity, &expense.ParcelNumber,
 			&expense.CreatedAt, &expense.UpdatedAt,
 		)
 		if err != nil {
@@ -273,7 +283,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpensesByUser(ctx context.Co
 
 func (c CreditCardExpenseRepository) FindCreditCardExpensesByDateRange(ctx context.Context, userID uuid.UUID, startDate, endDate time.Time) ([]domain.CreditCardExpense, error) {
 	query := `
-		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at
+		SELECT "ID", user_id, category_id, amount, description, date, card_id, installment_amount, installments_quantity, parcel_number, created_at, updated_at
 		FROM credit_card_expense 
 		WHERE user_id = $1 AND date >= $2 AND date <= $3
 		ORDER BY date DESC, created_at DESC`
@@ -289,7 +299,7 @@ func (c CreditCardExpenseRepository) FindCreditCardExpensesByDateRange(ctx conte
 		var expense domain.CreditCardExpense
 		err := rows.Scan(
 			&expense.ID, &expense.UserID, &expense.CategoryID, &expense.Amount, &expense.Description,
-			&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsNumber,
+			&expense.Date, &expense.CardID, &expense.InstallmentAmount, &expense.InstallmentsQuantity, &expense.ParcelNumber,
 			&expense.CreatedAt, &expense.UpdatedAt,
 		)
 		if err != nil {
@@ -311,8 +321,8 @@ func (c CreditCardExpenseRepository) InsertInstallments(ctx context.Context, ins
 	}
 
 	query := `
-		INSERT INTO credit_card_expense (user_id, category_id, amount, description, date, card_id, installment_amount, installments_number, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+		INSERT INTO credit_card_expense (user_id, category_id, amount, description, date, card_id, installment_amount, installments_quantity, parcel_number, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
 
 	batch := &pgx.Batch{}
 	now := time.Now()
@@ -320,7 +330,7 @@ func (c CreditCardExpenseRepository) InsertInstallments(ctx context.Context, ins
 	for _, installment := range installments {
 		batch.Queue(query,
 			installment.UserID, installment.CategoryID, installment.Amount, installment.Description, installment.Date,
-			installment.CardID, installment.InstallmentAmount, installment.InstallmentsNumber, now, now,
+			installment.CardID, installment.InstallmentAmount, installment.InstallmentsQuantity, installment.ParcelNumber, now, now,
 		)
 	}
 

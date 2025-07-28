@@ -76,5 +76,4 @@ func LoadRoutes(
 	creditCardExpenseGroup.PUT("/", creditCardExpenseHandler.UpdateCreditCardExpense)
 	creditCardExpenseGroup.DELETE("/:id", creditCardExpenseHandler.DeleteCreditCardExpense)
 	creditCardExpenseGroup.GET("/summary", creditCardExpenseHandler.GetCreditCardExpenseSummary)
-	creditCardExpenseGroup.POST("/installments/generate", creditCardExpenseHandler.GenerateInstallments)
 }
