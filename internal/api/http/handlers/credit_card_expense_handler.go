@@ -41,9 +41,9 @@ func (h *CreditCardExpenseHandler) GetCreditCardExpenseByID(ctx echo.Context) er
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid expense id"})
 	}
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	expense, err := h.svc.GetCreditCardExpenseByID(ctx.Request().Context(), id, userID)
 	if err != nil {
@@ -138,9 +138,9 @@ func (h *CreditCardExpenseHandler) DeleteCreditCardExpense(ctx echo.Context) err
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid expense id"})
 	}
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	if err := h.svc.DeleteCreditCardExpense(ctx.Request().Context(), id, userID); err != nil {
 		return ctx.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
@@ -149,9 +149,9 @@ func (h *CreditCardExpenseHandler) DeleteCreditCardExpense(ctx echo.Context) err
 }
 
 func (h *CreditCardExpenseHandler) GetCreditCardExpenseSummary(ctx echo.Context) error {
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	startDateStr := ctx.QueryParam("start_date")
 	endDateStr := ctx.QueryParam("end_date")
@@ -171,9 +171,17 @@ func (h *CreditCardExpenseHandler) GetCreditCardExpenseSummary(ctx echo.Context)
 }
 
 func (h *CreditCardExpenseHandler) GenerateInstallments(ctx echo.Context) error {
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
+	}
 	var expense domain.CreditCardExpense
 	if err := ctx.Bind(&expense); err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request data"})
+	}
+	expense.UserID = userID
+	if expense.InstallmentsNumber == 0 {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "installments number must be greater than zero"})
 	}
 	installments, err := h.svc.GenerateInstallments(ctx.Request().Context(), expense)
 	if err != nil {

@@ -40,9 +40,9 @@ func (h *RecurringExpenseHandler) GetRecurringExpenseByID(ctx echo.Context) erro
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid expense id"})
 	}
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	expense, err := h.svc.GetRecurringExpenseByID(ctx.Request().Context(), id, userID)
 	if err != nil {
@@ -135,9 +135,9 @@ func (h *RecurringExpenseHandler) DeleteRecurringExpense(ctx echo.Context) error
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid expense id"})
 	}
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	if err := h.svc.DeleteRecurringExpense(ctx.Request().Context(), id, userID); err != nil {
 		return ctx.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
@@ -146,9 +146,9 @@ func (h *RecurringExpenseHandler) DeleteRecurringExpense(ctx echo.Context) error
 }
 
 func (h *RecurringExpenseHandler) GetRecurringExpenseSummary(ctx echo.Context) error {
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	startDateStr := ctx.QueryParam("start_date")
 	endDateStr := ctx.QueryParam("end_date")
@@ -168,9 +168,9 @@ func (h *RecurringExpenseHandler) GetRecurringExpenseSummary(ctx echo.Context) e
 }
 
 func (h *RecurringExpenseHandler) GenerateRecurringExpenses(ctx echo.Context) error {
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	targetDateStr := ctx.QueryParam("target_date")
 	targetDate, err := time.Parse("2006-01-02", targetDateStr)

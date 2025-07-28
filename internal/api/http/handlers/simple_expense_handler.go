@@ -41,9 +41,9 @@ func (h *SimpleExpenseHandler) GetSimpleExpenseByID(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid expense id"})
 	}
 
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 
 	expense, err := h.svc.GetSimpleExpenseByID(ctx.Request().Context(), id, userID)
@@ -130,9 +130,9 @@ func (h *SimpleExpenseHandler) DeleteSimpleExpense(ctx echo.Context) error {
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid expense id"})
 	}
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	if err := h.svc.DeleteSimpleExpense(ctx.Request().Context(), id, userID); err != nil {
 		return ctx.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
@@ -141,9 +141,9 @@ func (h *SimpleExpenseHandler) DeleteSimpleExpense(ctx echo.Context) error {
 }
 
 func (h *SimpleExpenseHandler) GetSimpleExpenseSummary(ctx echo.Context) error {
-	userID, err := uuid.Parse(ctx.Param("user_id"))
-	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "invalid user id"})
+	userID, ok := ctx.Get("user_id").(uuid.UUID)
+	if !ok || userID == uuid.Nil {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid user id from token"})
 	}
 	startDateStr := ctx.QueryParam("start_date")
 	endDateStr := ctx.QueryParam("end_date")
